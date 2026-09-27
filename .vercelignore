@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+env
+vendor
+tests
+writable
+Dockerfile
+compose.yaml
+docker
+DEPLOYMENT.md
+phpunit.dist.xml

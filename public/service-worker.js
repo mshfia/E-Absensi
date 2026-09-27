@@ -1,4 +1,4 @@
-const CACHE_NAME = "e-absensi-v4";
+const CACHE_NAME = "e-absensi-v5";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",

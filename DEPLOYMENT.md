@@ -4,7 +4,21 @@
 
 Build and deploy the Docker image on a VPS or a platform that accepts custom containers (for example, Render, Railway, Fly.io, or a cloud container service). The image runs PHP 8.3, PHP-FPM, and Nginx; Nginx serves only `public/` and sends application routes to CodeIgniter.
 
-This is not a static-site deployment. Vercel does not provide an official PHP runtime. Its community PHP runtime is a separate option and requires Vercel-specific routing and packaging; this Docker image is for container hosts.
+This is not a static-site deployment. Vercel does not provide an official PHP runtime. A Vercel-specific setup is included in `vercel.json` and `api/index.php`, using the community `vercel-php` runtime on PHP 8.3. Docker is the preferred portable option; Vercel's PHP runtime is community-maintained.
+
+## Vercel Deployment
+
+The repository root must be the Vercel project root. In Project Settings, use the **Other** framework preset and clear any custom Output Directory such as `public`. Do not publish `public/` as a static-only site: that makes Vercel return `index.php` as a downloadable file. The checked-in `vercel.json` routes requests through the PHP function; that function serves only allowlisted static assets from `public/` and boots CodeIgniter for application routes.
+
+Add these variables under the Vercel project's **Environment Variables** for Production (and Preview if needed):
+
+- `CI_ENVIRONMENT` = `production`
+- `APP_BASE_URL` = the exact public origin with HTTPS and a trailing slash, e.g. `https://your-domain.vercel.app/`
+- `ENCRYPTION_KEY` = a private CodeIgniter key generated with `php -r "echo 'base64:'.base64_encode(random_bytes(32)), PHP_EOL;"`
+
+Never place the encryption key in `vercel.json`, source code, or a committed `.env` file. After changing Project Settings, create a new deployment and clear the Vercel build cache. Remove the old deployment's production alias until the new PHP function responds successfully. Verify `/`, `/app.css`, `/app.js`, `/manifest.webmanifest`, and a `/student/barcode/<10-digit-NISN>` URL; PHP files must never be returned with `application/x-httpd-php`.
+
+The Vercel function uses `/tmp` for CodeIgniter writable files. It is ephemeral and not shared across instances; it must not be used as persistent attendance or student-photo storage.
 
 ## Local Compose
 
