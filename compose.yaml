@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: ${PORT:-8080}
+      APP_BASE_URL: ${APP_BASE_URL:?Set APP_BASE_URL}
+      APP_FORCE_HTTPS: ${APP_FORCE_HTTPS:-false}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Set ENCRYPTION_KEY}
+    ports:
+      - "127.0.0.1:${PORT:-8080}:${PORT:-8080}"
+    volumes:
+      - app_writable:/var/www/html/writable
+    healthcheck:
+      test:
+        - CMD
+        - php
+        - -r
+        - "exit((@fsockopen('127.0.0.1', 9000)) ? 0 : 1);"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  app_writable:

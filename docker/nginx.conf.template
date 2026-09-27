@@ -1,0 +1,54 @@
+map $http_x_forwarded_proto $fastcgi_https {
+    default "";
+    https on;
+}
+
+server {
+    listen ${PORT};
+    server_name _;
+    root /var/www/html/public;
+    index index.php;
+    server_tokens off;
+    autoindex off;
+    client_max_body_size 2m;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+
+    location = /health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location = / {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/html/public/index.php;
+        fastcgi_param SCRIPT_NAME /index.php;
+        fastcgi_param HTTP_PROXY "";
+        fastcgi_param HTTPS $fastcgi_https;
+        fastcgi_pass 127.0.0.1:9000;
+    }
+
+    location / {
+        try_files $uri @codeigniter;
+    }
+
+    location @codeigniter {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/html/public/index.php;
+        fastcgi_param SCRIPT_NAME /index.php;
+        fastcgi_param HTTP_PROXY "";
+        fastcgi_param HTTPS $fastcgi_https;
+        fastcgi_pass 127.0.0.1:9000;
+    }
+
+    location ~ \.php$ {
+        return 404;
+    }
+
+    location ~ /\.(?!well-known) {
+        deny all;
+    }
+}

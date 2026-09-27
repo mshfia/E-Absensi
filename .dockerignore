@@ -1,0 +1,17 @@
+.git
+.github
+.vscode
+.idea
+.env
+.env._
+env
+vendor
+tests
+writable/\*\*
+phpunit_.xml
+phpstan.neon
+phpstan.neon.dist
+README.md
+DEPLOYMENT.md
+Dockerfile
+compose.yaml
