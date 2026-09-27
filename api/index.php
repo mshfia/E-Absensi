@@ -7,9 +7,19 @@ $baseUrl        = getenv('APP_BASE_URL');
 $encryptionKey  = getenv('ENCRYPTION_KEY');
 $ciEnvironment = getenv('CI_ENVIRONMENT') ?: 'production';
 
-if ($baseUrl === false || $encryptionKey === false || trim($encryptionKey) === '') {
+$missingSettings = [];
+
+if ($baseUrl === false || trim($baseUrl) === '') {
+    $missingSettings[] = 'APP_BASE_URL';
+}
+
+if ($encryptionKey === false || trim($encryptionKey) === '') {
+    $missingSettings[] = 'ENCRYPTION_KEY';
+}
+
+if ($missingSettings !== []) {
     http_response_code(503);
-    exit('Deployment environment is not configured.');
+    exit('Missing Vercel environment variables: ' . implode(', ', $missingSettings) . '.');
 }
 
 $baseUrlParts = parse_url($baseUrl);
@@ -21,7 +31,7 @@ if (
     || ($ciEnvironment === 'production' && $baseUrlParts['scheme'] !== 'https')
 ) {
     http_response_code(503);
-    exit('Deployment environment is not configured.');
+    exit('APP_BASE_URL must be a valid HTTPS URL in production.');
 }
 
 $decodedEncryptionKey = match (true) {
@@ -32,7 +42,7 @@ $decodedEncryptionKey = match (true) {
 
 if (!is_string($decodedEncryptionKey) || strlen($decodedEncryptionKey) < 32) {
     http_response_code(503);
-    exit('Deployment environment is not configured.');
+    exit('ENCRYPTION_KEY must decode to at least 32 bytes.');
 }
 
 $baseUrl = rtrim($baseUrl, '/') . '/';
